@@ -29,10 +29,10 @@ def cal_undistort(img, mtx, dist):
 
 ### thresholding function ###
 def threshold_combined(image, 
-                       threshold_rgb=[(200, 0, 0),(255, 255, 255)],
-                       threshold_yellow=[(17, 109, 33),(75, 255, 255)],
-                       threshold_white=[(0, 16, 101),(255, 255, 255)], 
-                       threshold_sobel=[20,110],
+                       threshold_rgb=[(220, 0, 0),(255, 255, 0)],
+                       threshold_yellow=[(17, 100, 100),(30, 255, 255)],
+                       threshold_white=[(0, 0, 155),(255, 100, 255)], 
+                       threshold_sobel=[30,255],
                        channels=3):
     img_rgb = image.copy()
     img_hls = cv2.cvtColor(img_rgb, cv2.COLOR_RGB2HLS)
@@ -56,62 +56,26 @@ def threshold_combined(image,
 
     # Sobel x
     sobelx = cv2.Sobel(img_hls[:,:,2], cv2.CV_64F, 1, 0) # Take the derivative in x
+    sobely = cv2.Sobel(img_hls[:,:,2], cv2.CV_64F, 0, 1) # Take the derivative in y
     abs_sobelx = np.absolute(sobelx) # Absolute x derivative to accentuate lines away from horizontal
+    abs_sobely = np.absolute(sobely) # Absolute x derivative to accentuate lines away from horizontal
     scaled_sobel = np.uint8(255*abs_sobelx/np.max(abs_sobelx))
+    scaled_sobel_y = np.uint8(255*abs_sobelx/np.max(abs_sobelx))
     
     # Threshold x gradient
     sxbinary = np.zeros_like(scaled_sobel)
     sxbinary[(scaled_sobel >= threshold_sobel[0]) & (scaled_sobel <= threshold_sobel[1])] = 255
     
-    color_binary = img_yellow2 + img_yellow + img_white + sxbinary
+    # Threshold y gradient
+    sybinary = np.zeros_like(scaled_sobel_y)
+    sybinary[(scaled_sobel_y >= threshold_sobel[0]) & (scaled_sobel_y <= threshold_sobel[1])] = 255
+    
+    color_binary = img_yellow2 + img_yellow + img_white + sxbinary + sybinary
     del img_rgb
     if(channels == 1):
         return color_binary
     else:
         return np.dstack((color_binary, np.zeros_like(color_binary), np.zeros_like(color_binary)))
-    
-
-def threshold_color(image, r_thresh=[100,255], s_thresh=(170, 255), sx_thresh=[20, 150]):
-    # Threshold x gradient
-    image = cv2.medianBlur(image, 3) # use median filter to color visualy
-    hls = cv2.cvtColor(image, cv2.COLOR_RGB2HLS)
-    r_channel = image[:,:,0]
-    sobelx = cv2.Sobel(r_channel, cv2.CV_64F, 1, 0) # Take the derivative in x
-    abs_sobelx = np.absolute(sobelx) # Absolute x derivative to accentuate lines away from horizontal
-    scaled_sobel = np.uint8(255*abs_sobelx/np.max(abs_sobelx))
-    sxbinary = np.zeros_like(scaled_sobel)
-    sxbinary[(scaled_sobel >= sx_thresh[0]) & (scaled_sobel <= sx_thresh[1])] = 255
-    
-    s_channel = hls[:,:,2]
-    s_binary = np.zeros_like(s_channel)
-    s_binary[(s_channel >= s_thresh[0]) & (s_channel <= s_thresh[1])] = 255
-    
-    color_binary = np.dstack((sxbinary, s_binary, np.zeros_like(sxbinary)))
-    return color_binary
-
-
-def sobel_threshold(image, s_thresh=(170, 255), sx_thresh=(20, 100)):
-    image = cv2.medianBlur(image, 3) # use median filter to color visualy
-    hls = cv2.cvtColor(image, cv2.COLOR_RGB2HLS)
-    l_channel = hls[:,:,1]
-    s_channel = hls[:,:,2]
-    # Sobel x
-    sobelx = cv2.Sobel(l_channel, cv2.CV_64F, 1, 0) # Take the derivative in x
-    abs_sobelx = np.absolute(sobelx) # Absolute x derivative to accentuate lines away from horizontal
-    scaled_sobel = np.uint8(255*abs_sobelx/np.max(abs_sobelx))
-    
-    # Threshold x gradient
-    sxbinary = np.zeros_like(scaled_sobel)
-    sxbinary[(scaled_sobel >= sx_thresh[0]) & (scaled_sobel <= sx_thresh[1])] = 255
-    
-    # Threshold color channel
-    s_binary = np.zeros_like(s_channel)
-    s_binary[(s_channel >= s_thresh[0]) & (s_channel <= s_thresh[1])] = 255
-    
-    color_binary = sxbinary + s_binary
-    ret, color_binary_out = cv2.threshold(color_binary, 1, 255, cv2.THRESH_BINARY)
-    color_binary = np.dstack((color_binary, np.zeros_like(color_binary), np.zeros_like(color_binary)))
-    return color_binary
 
 
 def perspective_transform(img, src_mat, dst_mat):
