@@ -44,6 +44,7 @@ After this step, I wraped the thresholding process with a function named `thresh
 
 After the thresholding step, it need to focus on lane area to seperating the lane line where the vehicle is currently located. In this step, the algorithm applies perspective transform to get bird eye view of the image.  I choosed the source and the destination to include in straight line image and transformed correctly.
 
+*Table 1. The Source and the destination points for perspective transform*
 | Source        | Destination   | 
 |:-------------:|:-------------:| 
 | 577, 460      | 320, 0        | 
@@ -58,60 +59,28 @@ Then, it transformed image with `cv2.getPerspectiveTransform()` and `cv2.warpPer
 
 **4) Detect lane pixels and fit to find the lane boundary.**
 
-In this step, the algorithm detects the lane pixel and find the lane boundary. I implemented the sliding window technique to find lane pixel and estimate lane parameters. I also implemented an lane parameter estimating method that finds parameters from nearby pixels of the previous lane parameters. I used RANSAC algorithm instead of polynomial fitting for more robust results.
+In this step, the algorithm detects the lane pixel and find the lane boundary. I implemented the sliding window technique to find lane pixel. I also implemented a method that finds nearby pixels of the previous lane parameters. I modeled the lane line as a second-order polynomials to describing the shape of the lane boundary. I used RANSAC algorithm instead of polynomial fitting for more robust results. The algorithm uses the previous 3 frames to get more robust results when a lane line is missing.
 
 
-However, applying those methods naively doesn't work for some cases, since an image of road scene can be classified into multiple cases.
-
-* Case 1: The lane pixel can be found but it doesn't have any prior knowledge (The first frame of the video)
-* Case 2: The lane pixel can be found and it matches to the previous frames. 
-* Case 3: The lane pixel can be found but it doesn't corresponds to the previous frames.
-* Case 4: The lane pixel can not be found.
 
 **5) Determine the curvature of the lane and vehicle position with respect to center.**
 
+I measured the curvature of the lane and the vehicle position from the center using simple math.
 
 **6) Warp the detected lane boundaries back onto the original image.**
 
+I warped the detected lane boundaries back onto the input image with perspective transform. I reused a function `perspective_transform()` in `image_functions.py` file. I reversed the source points and the destination points shown in *Table 1* to return the perspective of the image to the original image.
 
 **7) Output visual display of the lane boundaries and numerical estimation of lane curvature and vehicle position.**
 
-RANSAC polynomial fitting
 
-This function inputs an edge image from canny edge detection and results the left and right lane lines from input image. I assumed that a curved line can be expressed with 2nd-order polynomial, which can also be expressed to a x^2 + bx + c =0. Therefore, I used RANSAC algorithm with 2nd-order to estimate the coefficients of the polynomial. I also added polynomial regression as safety measures for RANSAC algorithm. This process is applied to the left and right line edge to find both road boundaries.
+
+**Results**
+
+The complete image pipeline is shown in below. 
 
 ```python
-from sklearn.linear_model import RANSACRegressor
-from sklearn.metrics import mean_squared_error
-from sklearn.preprocessing import PolynomialFeatures
-from sklearn.pipeline import make_pipeline
-
-def get_polylines(img, direction='left'):
-    # get nonzero value from image
-    np_nz = np.transpose(np.nonzero(img))
-    
-    xdata = np_nz[:,1]
-    ydata = np_nz[:,0]
-    
-    # RANSAC estimator
-    try:
-        estimator = RANSACRegressor()
-        model = make_pipeline(PolynomialFeatures(2), estimator)
-
-        model.fit(xdata.reshape(-1,1), ydata)
-        # Predict data of estimated models
-        draw_x = np.arange(xdata.min(), xdata.max())
-        draw_y = model.predict(draw_x.reshape(-1,1))
-    except:
-        f = np.poly1d(np.polyfit(xdata,ydata,2))
-        draw_x = np.arange(xdata.min(), xdata.max())
-        draw_y = f(draw_x)
-    
-    draw_points = np.asarray([draw_x, draw_y], dtype=np.int32).T
-    return draw_points
 ```
-
-Results
 
 The algorithm can find solid curved line from the test video. However, it showed unstable behavior when it shows when line edge are weak, which are when line is in shadow and if the space between dashed line is too long.
 
@@ -126,8 +95,8 @@ The algorithm could not detect lane lines correctly on following road conditions
 
 The limitations can be improved if:
 * the algorithm can classify situations for line splits and merge with the angle between the found left and right lanes. or the number of existing lines at each line segments.
-* the parameter for line finding algorithm(i.e. RANSAC) is properly tuned, and ensemble of two or more line finding algorithms.
-* template matching could improve the performance of the line detection at limited environmental conditions. 
+* the parameter for line finding algorithm is properly tuned, and ensemble of two or more line finding algorithms.
+* an advanced approach(e.g. segmentation using deep learning) could improve the performance of the line detection at limited environmental conditions. 
 
 References
 ---
