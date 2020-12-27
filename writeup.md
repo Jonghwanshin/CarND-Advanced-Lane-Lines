@@ -61,26 +61,33 @@ Then, it transformed image with `cv2.getPerspectiveTransform()` and `cv2.warpPer
 
 In this step, the algorithm detects the lane pixel and find the lane boundary. I implemented the sliding window technique to find lane pixel. I also implemented a method that finds nearby pixels of the previous lane parameters. I modeled the lane line as a second-order polynomials to describing the shape of the lane boundary. I used RANSAC algorithm instead of polynomial fitting for more robust results. The algorithm uses the previous 3 frames to get more robust results when a lane line is missing.
 
+![Test image](./output_images/img_pipeline_lane_boundary.png)
+*Fig 4. An example of detected lanes*
 
+![Test image](./output_images/img_pipeline_lane_before_pt.png)
+*Fig 5. An example of visualized lanes*
 
 **5) Determine the curvature of the lane and vehicle position with respect to center.**
 
-I measured the curvature of the lane and the vehicle position from the center using simple math.
+I measured the curvature of the lane and the vehicle position from the center using simple math. The `measure_curvature_real()` function in `image_functions.py`.transforms polynomial functions into curvature based on the ratios of pixel-to-meter for x and y direction.
+I assumed the image center as the position of the vehicle center for calculating the vehicle position. I calculated the difference between the image center and the lane center and transformed into real distance based on the ratio of pixel-to-meter which I used on calculating the lane curvature. I implemented this step in `get_vehicle_pos()` function in `image_functions.py`.
 
 **6) Warp the detected lane boundaries back onto the original image.**
 
-I warped the detected lane boundaries back onto the input image with perspective transform. I reused a function `perspective_transform()` in `image_functions.py` file. I reversed the source points and the destination points shown in *Table 1* to return the perspective of the image to the original image.
+I warped the detected lane boundaries back onto the input image with perspective transform. I reused a function `perspective_transform()` in `image_functions.py` file. I reversed the source points and the destination points shown in *Table 1* to return the perspective of the image to the original image. The Fig 6. shows the result of this step from the image from Fig 5.
+
+![Test image](./output_images/img_pipeline_lane_warped.png)
+*Fig 6. An example of visualized lanes*
 
 **7) Output visual display of the lane boundaries and numerical estimation of lane curvature and vehicle position.**
 
+I combined the above calculation and the found lanes into the input image using OpenCV functions. The detailed implementation is shown in `weighted_img()`and `put_info_to_img() ` function on `image_functions.py`.
+
+![Test image](./output_images/img_pipeline_measure_curvature.png)
+*Fig 7. The result of image pipeline*
 
 
 **Results**
-
-The complete image pipeline is shown in below. 
-
-```python
-```
 
 The algorithm can find solid curved line from the test video. However, it showed unstable behavior when it shows when line edge are weak, which are when line is in shadow and if the space between dashed line is too long.
 
@@ -89,7 +96,7 @@ The algorithm can find solid curved line from the test video. However, it showed
 The algorithm could not detect lane lines correctly on following road conditions:
 * Lane line splits and merge: entry ramps and exit ramps on highway
 * Highly curved lane line: interchanges on highway, roundabouts, mountain roads
-* Limited environmental conditions: heavy rain, low constrast lanes
+* Limited environmental conditions: heavy rain, low contrast lanes
 
 ### 3. Suggest possible improvements to your pipeline
 
