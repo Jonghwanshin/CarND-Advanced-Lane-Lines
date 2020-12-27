@@ -59,7 +59,26 @@ Then, it transformed image with `cv2.getPerspectiveTransform()` and `cv2.warpPer
 
 **4) Detect lane pixels and fit to find the lane boundary.**
 
-In this step, the algorithm detects the lane pixel and find the lane boundary. I implemented the sliding window technique to find lane pixel. I also implemented a method that finds nearby pixels of the previous lane parameters. I modeled the lane line as a second-order polynomials to describing the shape of the lane boundary. I used RANSAC algorithm instead of polynomial fitting for more robust results. The algorithm uses the previous 3 frames to get more robust results when a lane line is missing.
+```pseudocode
+
+for lane in [left_lane, right_lane]:
+  if lane_results[-1] not found:
+    lane_result = lane_find_sliding_window(img):
+  else:
+    lane_result = lane_find_search_around(img)
+    lane_result_predict = lane_find_predict(lane_results)
+  if abs(lane_result - lane_result_predict) > error_threshold:
+    lane_result = 0.9 * lane_result + 0.1 * lane_result_predict
+```
+
+
+In this step, the algorithm detects the lane pixel and find the lane boundary. I implemented the sliding window technique to find lane pixel. I also implemented a method that finds nearby pixels of the previous lane parameters. I modeled the lane line as a second-order polynomials to describing the shape of the lane boundary. I used RANSAC algorithm instead of polynomial fitting for more robust results. The algorithm uses the previous 5 frames to get more robust results when a lane line is missing.
+
+### TODO: add here for sliding window technique
+
+### TODO: add here for consecutive frame technique
+
+### TODO: add here for consecutive frame technique
 
 ![Test image](./output_images/img_pipeline_lane_boundary.png)
 *Fig 4. An example of detected lanes*
@@ -74,7 +93,7 @@ I assumed the image center as the position of the vehicle center for calculating
 
 **6) Warp the detected lane boundaries back onto the original image.**
 
-I warped the detected lane boundaries back onto the input image with perspective transform. I reused a function `perspective_transform()` in `image_functions.py` file. I reversed the source points and the destination points shown in *Table 1* to return the perspective of the image to the original image. The Fig 6. shows the result of this step from the image from Fig 5.
+I warped the detected lane boundaries back onto the input image with perspective transform. I reused a function `perspective_transform()` in `image_functions.py` file. I reversed the source points and the destination points shown in *Table 1* to return the perspective of the image to the original image. The Fig 6. shows the result of this step from the found lane image from Fig 5.
 
 ![Test image](./output_images/img_pipeline_lane_warped.png)
 *Fig 6. An example of visualized lanes*

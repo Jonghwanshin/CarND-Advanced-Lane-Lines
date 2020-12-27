@@ -11,6 +11,7 @@ import os
 ym_per_pix = 30/720 # meters per pixel in y dimension
 xm_per_pix = 3.7/700 # meters per pixel in x dimension
 
+
 def show_images(img1, img2, title1, title2, filename='', save=False):
     f, (ax1, ax2) = plt.subplots(1, 2, figsize=(24, 9))
     f.tight_layout()
@@ -22,18 +23,29 @@ def show_images(img1, img2, title1, title2, filename='', save=False):
     if save:
         output_filename_1 = 'output_images/{0}.png'.format(filename)
         plt.savefig(output_filename_1)
-        
+
+
 def cal_undistort(img, mtx, dist):
     undist = cv2.undistort(img, mtx, dist, None, mtx)
     return undist
 
-### thresholding function ###
+
 def threshold_combined(image, 
                        threshold_rgb=[(220, 0, 0),(255, 255, 0)],
                        threshold_yellow=[(17, 100, 100),(30, 255, 255)],
                        threshold_white=[(0, 0, 155),(255, 100, 255)], 
                        threshold_sobel=[30,255],
                        channels=3):
+    """
+    combined threshold to get binary image
+    
+    HYPERPARAMETERS
+    * threshold rgb: the color filter to get images.
+    * threhosld yellow: the color filter to get yellow lane lines.
+    * threshold white: the color filter to get white lane lines.
+    * threshold sobel: the sobel filter to get edges.
+    """
+
     img_rgb = image.copy()
     img_hls = cv2.cvtColor(img_rgb, cv2.COLOR_RGB2HLS)
     img_hsv = cv2.cvtColor(img_rgb, cv2.COLOR_RGB2HSV)
@@ -85,6 +97,7 @@ def perspective_transform(img, src_mat, dst_mat):
     M = cv2.getPerspectiveTransform(src_mat, dst_mat)
     warped = cv2.warpPerspective(img, M, (img.shape[1], img.shape[0]), flags=cv2.INTER_LINEAR)
     return warped
+
 
 def find_lane_pixels(binary_warped, nwindows=9, margin=100, minpix=50):
     """
@@ -170,12 +183,12 @@ def fit_polynomial(binary_warped, nwindows=9, margin=100, minpix=50, output=Fals
     try:
         left_fit = np.polyfit(lefty, leftx, 2)
     except:
-        print('fitting left is failed {0} {0}', lefty, leftx)
+        print('fitting left is failed {0} {0}'.format(lefty, leftx))
         left_fit = [0, 0, 0]
     try:
         right_fit = np.polyfit(righty, rightx, 2)
     except:
-        print('fitting right is failed {0} {0}', righty, rightx)
+        print('fitting right is failed {0} {0}'.format(righty, rightx))
         right_fit = [0, 0, 0]
 
     # Generate x and y values for plotting
