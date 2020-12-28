@@ -1,39 +1,17 @@
-import numpy as np
-
 class Lane:
-    def __init__(self, xpoints, ypoints):
-        try:
-            self.__points_x = xpoints
-            self.__points_y = ypoints
-            self.__fit_coeffs = []
-            self.__fit_coeffs_meters = []
-        except:
-            print(xpoints, ypoints)
-        return
-    
-    @property
-    def fit_coeffs(self):
-        return self.__fit_coeffs
-
-    @property
-    def fit_coeffs_meters(self):
-        return self.__fit_coeffs_meters
-
-    @property
-    def points_x(self):
-        return self.__points_x
-
-    @property
-    def points_y(self):
-        return self.__points_y
-
-    def fit_point(self):
-        try:
-            # Fit a second order polynomial to each using `np.polyfit`
-            self.__fit_coeffs = np.polyfit(self.points_y, self.points_x, 2)
-            return True
-        except Exception as inst:
-            print(self.points_x.shape)
-            print(self.points_y.shape)
-            print(type(inst), inst.args, inst)
-            return False
+    """
+        Lane representation at Bird-eye View
+    """
+    def __init__(self, width=360):
+        self.__width = width
+        self.__curvature = 0
+        self.__center = 0
+    def visualize_lane(self):
+        """
+            Generate the lane image based on current configuration
+        """
+        return img_output
+    def get_position(self, left_boundary, right_boundary):
+        boundary = 0
+        return boundary
+        #https://math.stackexchange.com/questions/2537356/how-can-i-find-the-center-point-and-radius-of-an-arc-segment-from-quadratic-equa

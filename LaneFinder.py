@@ -1,5 +1,5 @@
 from image_functions import *
-from Lane import Lane
+from LaneBoundary import LaneBoundary
 
 NOT_FOUND = 0
 FOUND = 1
@@ -9,6 +9,9 @@ YM_PER_PIX = 30/720 # meters per pixel in y dimension
 XM_PER_PIX = 3.7/700 # meters per pixel in x dimension
 
 class LaneFinder:
+    """
+        Finder for lane
+    """
     def __init__(self, 
                  thres_err=0.01,
                  windows=9, 
@@ -25,6 +28,14 @@ class LaneFinder:
         self.__margin_window = margin_window # margin: Set the width of the windows +/- margin
         self.__minpix = minpix # minpix: Set minimum number of pixels found to recenter window
         self.__margin_search = margin_search # margin: Set the width of the windows +/- margin
+        return
+    
+    def reset(self):
+        self.__lane_left = []
+        self.__lane_right = []
+        self.__curvature = 0
+        self.__vehicle_position = 0
+        self.__status = NOT_FOUND
         return
 
     @property
@@ -66,10 +77,13 @@ class LaneFinder:
         
         # if the lane is not found on the current frame predict from previous frame
         if (self.__status == NOT_FOUND):# or (error > self.error_threshold):
-            self.predict_current_frame()
-        else:
-            self.__lane_left.append(left_lane_temp)
-            self.__lane_right.append(right_lane_temp)
+            left_lane_temp, right_lane_temp = self.predict_current_frame()
+        
+        self.__lane_left.append(left_lane_temp)
+        self.__lane_right.append(right_lane_temp)
+
+        self.__lane_left = self.__lane_left[-5:]
+        self.__lane_right = self.__lane_right[-5:]
 
         # Calculate the radius of curvature in meters for both lane lines
         self.__curvature = self.measure_curvature_real()
@@ -130,11 +144,9 @@ class LaneFinder:
         # Take a histogram of the bottom half of the image
         histogram = np.sum(binary_warped, axis=0)
         
-        print(histogram.shape)
         # Find the peak of the left and right halves of the histogram
         # These will be the starting point for the left and right lines
         midpoint = np.int(histogram.shape[0]//2)
-        print(midpoint)
         leftx_base = np.argmax(histogram[:midpoint])
         rightx_base = np.argmax(histogram[midpoint:]) + midpoint
 
@@ -200,8 +212,8 @@ class LaneFinder:
         status = FOUND
         leftx, lefty, rightx, righty = self.find_lane_pixels(binary_warped)
 
-        lane_left = Lane(leftx, lefty)
-        lane_right = Lane(rightx, righty)
+        lane_left = LaneBoundary(leftx, lefty)
+        lane_right = LaneBoundary(rightx, righty)
         
         #print(leftx[:5], lefty[:5], rightx[:5], righty[:5])
         for idx, lane in enumerate([lane_left, lane_right]):
@@ -238,8 +250,8 @@ class LaneFinder:
         rightx = nonzerox[right_lane_inds]
         righty = nonzeroy[right_lane_inds]
         
-        lane_left = Lane(leftx, lefty)
-        lane_right = Lane(rightx, righty)
+        lane_left = LaneBoundary(leftx, lefty)
+        lane_right = LaneBoundary(rightx, righty)
         
         for idx, lane in enumerate([lane_left, lane_right]):
             if not lane.fit_point():
