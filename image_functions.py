@@ -6,6 +6,14 @@ import matplotlib.image as mpimg
 import glob
 import os
 
+matFrontView = np.float32([[190, 720],
+                      [577, 460],
+                      [705, 460],
+                      [1127, 720]])
+matBirdEyeView = np.float32([[320, 720],
+                      [320, 0],
+                      [960, 0],
+                      [960, 720]])
 
 # Define conversions in x and y from pixels space to meters
 ym_per_pix = 30/720 # meters per pixel in y dimension
@@ -327,8 +335,14 @@ def put_info_to_img(img, curvature, vehicle_pos):
     
     text_radius = 'Radius of Curvature = {0:.1f}m'.format(curvature)
     text_vehicle_pos = 'Vehicle Pos = {0:.2f}m from the center'.format(vehicle_pos)
-    cv2.putText(img, text_radius, bottomLeftCornerOfText[0], font, fontScale, fontColor, lineType)
-    cv2.putText(img, text_vehicle_pos, bottomLeftCornerOfText[1], font, fontScale, fontColor, lineType)
+    cv2.putText(img, 
+                text_radius, 
+                bottomLeftCornerOfText[0], 
+                font, fontScale, fontColor, lineType)
+    cv2.putText(img, 
+                text_vehicle_pos, 
+                bottomLeftCornerOfText[1], 
+                font, fontScale, fontColor, lineType)
     return img
 
 

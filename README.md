@@ -19,13 +19,13 @@ To install conda environment, use following command to install and activate the 
 
 for CPU environment:
 ```bash
-conda env create -y environment.yml
+conda env create --file environment.yml
 conda activate carnd-term1
 ```
 
 for GPU environment:
 ```bash
-conda env create -y environment-gpu.yml
+conda env create --file environment-gpu.yml
 conda activate carnd-term1
 ```
 
