@@ -7,6 +7,7 @@ class LaneBoundary:
             self.__points_y = ypoints
             self.__fit_coeffs = []
             self.__fit_coeffs_meters = []
+            self.__location = 0
         except:
             print(xpoints, ypoints)
         return
@@ -27,6 +28,10 @@ class LaneBoundary:
     def points_y(self):
         return self.__points_y
 
+    @property
+    def location(self):
+        return self.__location
+
     def fit_point(self):
         try:
             # Fit a second order polynomial to each using `np.polyfit`
@@ -37,3 +42,10 @@ class LaneBoundary:
             print(self.points_y.shape)
             print(type(inst), inst.args, inst)
             return False
+
+    def get_location(self):
+        """
+            Calculate the location at bottom of the image
+        """
+        
+        self.location = loc

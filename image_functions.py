@@ -42,7 +42,8 @@ def threshold_combined(image,
                        threshold_rgb=[(220, 0, 0),(255, 255, 0)],
                        threshold_yellow=[(17, 100, 100),(30, 255, 255)],
                        threshold_white=[(0, 0, 155),(255, 100, 255)], 
-                       threshold_sobel=[30,255],
+                       threshold_sobel_x=[30,255],
+                       threshold_sobel_y=[30,255],
                        channels=3):
     """
     combined threshold to get binary image
@@ -55,8 +56,8 @@ def threshold_combined(image,
     """
 
     img_rgb = image.copy()
-    img_hls = cv2.cvtColor(img_rgb, cv2.COLOR_RGB2HLS)
-    img_hsv = cv2.cvtColor(img_rgb, cv2.COLOR_RGB2HSV)
+    img_hls = cv2.cvtColor(img_rgb.copy(), cv2.COLOR_RGB2HLS)
+    img_hsv = cv2.cvtColor(img_rgb.copy(), cv2.COLOR_RGB2HSV)
 
     img_mask_overall = np.zeros_like(image)
     rgb_mask = cv2.inRange(img_rgb, threshold_rgb[0], threshold_rgb[1])
@@ -73,38 +74,39 @@ def threshold_combined(image,
     img_yellow2 = cv2.cvtColor(img_yellow2, cv2.COLOR_RGB2GRAY)
     img_yellow = cv2.cvtColor(img_yellow, cv2.COLOR_RGB2GRAY)
     img_white = cv2.cvtColor(img_white, cv2.COLOR_RGB2GRAY)
+    img_to_show = cv2.cvtColor(img_to_show, cv2.COLOR_RGB2GRAY)
+
+    color_binary = img_to_show
+    
+    #color_binary = im_bw
 
     # Sobel x
-    sobelx = cv2.Sobel(img_hls[:,:,2], cv2.CV_64F, 1, 0) # Take the derivative in x
-    sobely = cv2.Sobel(img_hls[:,:,2], cv2.CV_64F, 0, 1) # Take the derivative in y
+    sobelx = cv2.Sobel(color_binary, cv2.CV_64F, 1, 0) # Take the derivative in x
     abs_sobelx = np.absolute(sobelx) # Absolute x derivative to accentuate lines away from horizontal
-    abs_sobely = np.absolute(sobely) # Absolute x derivative to accentuate lines away from horizontal
-    scaled_sobel = np.uint8(255*abs_sobelx/np.max(abs_sobelx))
-    scaled_sobel_y = np.uint8(255*abs_sobely/np.max(abs_sobely))
+    scaled_sobel = np.uint8(255*abs_sobelx/np.max(abs_sobelx))    
     
     # Threshold x gradient
     sxbinary = np.zeros_like(scaled_sobel)
-    #sxbinary[(scaled_sobel >= threshold_sobel[0]) & (scaled_sobel <= threshold_sobel[1])] = 255
-    sxbinary = cv2.adaptiveThreshold(scaled_sobel_x, 
-                                     threshold_sobel[0], 
-                                     cv2.ADAPTIVE_THRESH_MEAN_C, 
-                                     cv2.THRESH_BINARY, 
-                                     21, 5)
-    # Threshold y gradient
-    sybinary = np.zeros_like(scaled_sobel_y)
-    #sybinary[(scaled_sobel_y >= threshold_sobel[0]) & (scaled_sobel_y <= threshold_sobel[1])] = 255
-    sybinary = cv2.adaptiveThreshold(scaled_sobel_y, 
-                                     threshold_sobel[0], 
-                                     cv2.ADAPTIVE_THRESH_MEAN_C, 
-                                     cv2.THRESH_BINARY, 
-                                     21, 5)
+    sxbinary[(scaled_sobel >= threshold_sobel_x[0]) & (scaled_sobel <= threshold_sobel_x[1])] = 255
     
-    color_binary = img_yellow2 + img_yellow + img_white + sxbinary + sybinary
+    #img_hsv
+    thres_adaptive = threshold_sobel_y[0]
+    filter_size = threshold_sobel_y[1]
+    if filter_size % 2 == 1 and filter_size > 1 and filter_size < 30:
+        ##(thresh, im_bw) = cv2.threshold(img_hsv[:,:,1], th_min, th_max, cv2.THRESH_TOZERO | cv2.THRESH_OTSU)
+        im_bw = cv2.adaptiveThreshold(img_to_show, thres_adaptive, 
+                                    cv2.ADAPTIVE_THRESH_MEAN_C,
+                                    cv2.THRESH_BINARY, filter_size, 2)
+
+        img_result = im_bw
+    else:
+        img_result = img_to_show
+
     del img_rgb
     if(channels == 1):
-        return color_binary
+        return img_result
     else:
-        return np.dstack((color_binary, color_binary, color_binary))
+        return img_result #np.dstack((img_result, img_result, img_result))
 
 
 def perspective_transform(img, src_mat, dst_mat):

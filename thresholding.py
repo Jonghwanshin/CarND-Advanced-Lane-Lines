@@ -22,7 +22,8 @@ thresholds_white['Saturation']= [0, 255]
 keys_white_filter = ['Hue', 'Lightness', 'Saturation']
 
 thresholds_sobel = dict()
-thresholds_sobel['Sobel'] = [0,255]
+thresholds_sobel['Sobel_x'] = [0,255]
+thresholds_sobel['Sobel_y'] = [0,255]
 
 name_control_window = 'Control'
 
@@ -44,7 +45,7 @@ def onChange(x):
     pass
 
 def trackbar():
-    test_image = 'test_images/test_sample.png'
+    test_image = 'test_images/test_sample_resized.png'
     
     img_rgb = cv2.cvtColor(cv2.imread(test_image),cv2.COLOR_BGR2RGB)
     cv2.namedWindow(test_image)
@@ -57,15 +58,17 @@ def trackbar():
         cv2.createTrackbar(key+'max', name_control_window, 0, 255, onChange)
         cv2.setTrackbarPos(key+'max', name_control_window, 255)
     for key in keys_yellow_filter:
-        cv2.createTrackbar(key+'Lmin', name_control_window, 0, 255, onChange)
-        cv2.createTrackbar(key+'Lmax', name_control_window, 0, 255, onChange)
-        cv2.setTrackbarPos(key+'Lmax', name_control_window, 0)
+        cv2.createTrackbar(key+'Ymin', name_control_window, 0, 255, onChange)
+        cv2.createTrackbar(key+'Ymax', name_control_window, 0, 255, onChange)
+        cv2.setTrackbarPos(key+'Ymax', name_control_window, 0)
     for key in keys_white_filter:
         cv2.createTrackbar(key+'Wmin', name_control_window, 0, 255, onChange)
         cv2.createTrackbar(key+'Wmax', name_control_window, 0, 255, onChange)
         cv2.setTrackbarPos(key+'Wmax', name_control_window, 0)
-    cv2.createTrackbar('sobel_min', name_control_window, 0, 255, onChange)
-    cv2.createTrackbar('sobel_max', name_control_window, 0, 255, onChange)
+    cv2.createTrackbar('sobel_x_min', name_control_window, 0, 255, onChange)
+    cv2.createTrackbar('sobel_x_max', name_control_window, 0, 255, onChange)
+    cv2.createTrackbar('sobel_y_min', name_control_window, 0, 255, onChange)
+    cv2.createTrackbar('sobel_y_max', name_control_window, 0, 255, onChange)
             
     while(True):
         if cv2.waitKey(1) & 0xFF == 27: # exit when 'Esc' Key is pressed
@@ -74,25 +77,29 @@ def trackbar():
             thresholds_rgb[key][0] = cv2.getTrackbarPos(key+'min', name_control_window)
             thresholds_rgb[key][1] = cv2.getTrackbarPos(key+'max', name_control_window)
         for key in keys_yellow_filter:
-            thresholds_yellow[key][0] = cv2.getTrackbarPos(key+'Lmin', name_control_window)
-            thresholds_yellow[key][1] = cv2.getTrackbarPos(key+'Lmax', name_control_window)
+            thresholds_yellow[key][0] = cv2.getTrackbarPos(key+'Ymin', name_control_window)
+            thresholds_yellow[key][1] = cv2.getTrackbarPos(key+'Ymax', name_control_window)
         for key in keys_white_filter:
             thresholds_white[key][0] = cv2.getTrackbarPos(key+'Wmin', name_control_window)
             thresholds_white[key][1] = cv2.getTrackbarPos(key+'Wmax', name_control_window)
-        thresholds_sobel['Sobel'][0] = cv2.getTrackbarPos('sobel_min', name_control_window)
-        thresholds_sobel['Sobel'][1] = cv2.getTrackbarPos('sobel_max', name_control_window)
+        thresholds_sobel['Sobel_x'][0] = cv2.getTrackbarPos('sobel_x_min', name_control_window)
+        thresholds_sobel['Sobel_x'][1] = cv2.getTrackbarPos('sobel_x_max', name_control_window)
+        thresholds_sobel['Sobel_y'][0] = cv2.getTrackbarPos('sobel_y_min', name_control_window)
+        thresholds_sobel['Sobel_y'][1] = cv2.getTrackbarPos('sobel_y_max', name_control_window)
         threshold_rgb = get_img_threshold(thresholds_rgb)
         threshold_yellow = get_img_threshold(thresholds_yellow)
         threshold_white = get_img_threshold(thresholds_white)
-        threshold_sobel = get_img_threshold(thresholds_sobel)
+        threshold_sobel_x = thresholds_sobel['Sobel_x']
+        threshold_sobel_y = thresholds_sobel['Sobel_y']
         img_result = threshold_combined(img_rgb, 
                                         threshold_rgb,
                                         threshold_yellow, 
                                         threshold_white, 
-                                        threshold_sobel)
+                                        threshold_sobel_x,
+                                        threshold_sobel_y)
 
         # ret, img_result = cv2.threshold(img_to_show, 1, 255, cv2.THRESH_BINARY)
-        cv2.imshow(test_image, cv2.cvtColor(img_result, cv2.COLOR_RGB2BGR))
+        cv2.imshow(test_image, img_result)#,cv2.cvtColor(img_result, cv2.COLOR_RGB2BGR))
 
         
     
