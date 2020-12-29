@@ -215,7 +215,6 @@ class LaneFinder:
         lane_left = LaneBoundary(leftx, lefty)
         lane_right = LaneBoundary(rightx, righty)
         
-        #print(leftx[:5], lefty[:5], rightx[:5], righty[:5])
         for idx, lane in enumerate([lane_left, lane_right]):
             if not lane.fit_point():
                 print('fitting for lane-{0} failed'.format(idx))
@@ -294,8 +293,6 @@ class LaneFinder:
         y_eval = np.max(lefty)
         
         # the calculation of R_curve (radius of curvature)
-        A_left = ym_per_pix * left_fit_cr[0]
-        B_left = left_fit_cr[1] 
         left_curverad = np.power((1+(2 * left_fit_cr[0] * y_eval * ym_per_pix + left_fit_cr[1]) ** 2), 3/2) / np.absolute(2 * left_fit_cr[0])
         right_curverad = ((1 + (2*right_fit_cr[0]*y_eval*ym_per_pix + right_fit_cr[1])**2)**1.5) / np.absolute(2*right_fit_cr[0])
         

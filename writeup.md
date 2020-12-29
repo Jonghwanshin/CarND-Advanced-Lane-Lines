@@ -81,9 +81,11 @@ In this step, the algorithm detects the lane pixel and find the lane boundary. I
 ### TODO: add here for consecutive frame technique
 
 ![Test image](./output_images/img_pipeline_lane_boundary.png)
+
 *Fig 4. An example of detected lanes*
 
 ![Test image](./output_images/img_pipeline_lane_before_pt.png)
+
 *Fig 5. An example of visualized lanes*
 
 **5) Determine the curvature of the lane and vehicle position with respect to center.**
@@ -96,6 +98,7 @@ I assumed the image center as the position of the vehicle center for calculating
 I warped the detected lane boundaries back onto the input image with perspective transform. I reused a function `perspective_transform()` in `image_functions.py` file. I reversed the source points and the destination points shown in *Table 1* to return the perspective of the image to the original image. The Fig 6. shows the result of this step from the found lane image from Fig 5.
 
 ![Test image](./output_images/img_pipeline_lane_warped.png)
+
 *Fig 6. An example of visualized lanes*
 
 **7) Output visual display of the lane boundaries and numerical estimation of lane curvature and vehicle position.**
@@ -103,6 +106,7 @@ I warped the detected lane boundaries back onto the input image with perspective
 I combined the above calculation and the found lanes into the input image using OpenCV functions. The detailed implementation is shown in `weighted_img()`and `put_info_to_img() ` function on `image_functions.py`.
 
 ![Test image](./output_images/img_pipeline_measure_curvature.png)
+
 *Fig 7. The result of image pipeline*
 
 
@@ -121,11 +125,9 @@ The algorithm could not detect lane lines correctly on following road conditions
 
 The limitations can be improved if:
 * the algorithm can classify situations for line splits and merge with the angle between the found left and right lanes. or the number of existing lines at each line segments.
-* the parameter for line finding algorithm is properly tuned, and ensemble of two or more line finding algorithms.
+* the parameters for line finding algorithm are properly tuned, and ensemble of two or more line finding algorithms.
 * an advanced approach(e.g. segmentation using deep learning) could improve the performance of the line detection at limited environmental conditions. 
 
 References
 ---
-[^1]: "In image processing applications, why do we convert from RGB to Grayscale?", Quora, https://www.quora.com/In-image-processing-applications-why-do-we-convert-from-RGB-to-Grayscale.
-
-[image1]: ./resources/CarND-P1-Fig1.png "Image Pipeline"
+"In image processing applications, why do we convert from RGB to Grayscale?", Quora, https://www.quora.com/In-image-processing-applications-why-do-we-convert-from-RGB-to-Grayscale.

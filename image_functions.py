@@ -80,22 +80,31 @@ def threshold_combined(image,
     abs_sobelx = np.absolute(sobelx) # Absolute x derivative to accentuate lines away from horizontal
     abs_sobely = np.absolute(sobely) # Absolute x derivative to accentuate lines away from horizontal
     scaled_sobel = np.uint8(255*abs_sobelx/np.max(abs_sobelx))
-    scaled_sobel_y = np.uint8(255*abs_sobelx/np.max(abs_sobelx))
+    scaled_sobel_y = np.uint8(255*abs_sobely/np.max(abs_sobely))
     
     # Threshold x gradient
     sxbinary = np.zeros_like(scaled_sobel)
-    sxbinary[(scaled_sobel >= threshold_sobel[0]) & (scaled_sobel <= threshold_sobel[1])] = 255
-    
+    #sxbinary[(scaled_sobel >= threshold_sobel[0]) & (scaled_sobel <= threshold_sobel[1])] = 255
+    sxbinary = cv2.adaptiveThreshold(scaled_sobel_x, 
+                                     threshold_sobel[0], 
+                                     cv2.ADAPTIVE_THRESH_MEAN_C, 
+                                     cv2.THRESH_BINARY, 
+                                     21, 5)
     # Threshold y gradient
     sybinary = np.zeros_like(scaled_sobel_y)
-    sybinary[(scaled_sobel_y >= threshold_sobel[0]) & (scaled_sobel_y <= threshold_sobel[1])] = 255
+    #sybinary[(scaled_sobel_y >= threshold_sobel[0]) & (scaled_sobel_y <= threshold_sobel[1])] = 255
+    sybinary = cv2.adaptiveThreshold(scaled_sobel_y, 
+                                     threshold_sobel[0], 
+                                     cv2.ADAPTIVE_THRESH_MEAN_C, 
+                                     cv2.THRESH_BINARY, 
+                                     21, 5)
     
     color_binary = img_yellow2 + img_yellow + img_white + sxbinary + sybinary
     del img_rgb
     if(channels == 1):
         return color_binary
     else:
-        return np.dstack((color_binary, np.zeros_like(color_binary), np.zeros_like(color_binary)))
+        return np.dstack((color_binary, color_binary, color_binary))
 
 
 def perspective_transform(img, src_mat, dst_mat):

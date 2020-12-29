@@ -2,7 +2,7 @@ class Lane:
     """
         Lane representation at Bird-eye View
     """
-    def __init__(self, width=360):
+    def __init__(self, width=640):
         self.__width = width
         self.__curvature = 0
         self.__center = 0
